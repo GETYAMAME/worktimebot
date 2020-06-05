@@ -43,7 +43,7 @@ client.on("message", message => {
     let strToday = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDay();
     let strYesterday = yesterday.getFullYear() + "-" + (yesterday.getMonth() + 1) + "-" + yesterday.getDay();
     params.sql =
-      "select users.username ,cast(min(staytimes.joinedtime) As time) As '出社時間',cast(max(staytimes.joinedtime  + staytimes.staytime) As time) As '退社時間' , sec_to_time(sum( time_to_sec(staytimes.staytime))) AS '合計滞在時間' from staytimes " +
+      "select users.username ,cast(min(staytimes.joinedtime) As time) As '出社時間',max(sec_to_time(time_to_sec(staytimes.joinedtime) + time_to_sec(staytimes.staytime))) As '退社時間' , sec_to_time(sum( time_to_sec(staytimes.staytime))) AS '合計滞在時間' from staytimes " +
       "LEFT JOIN users ON users.id = staytimes.user_id " +
       "where staytimes.joinedtime between '" +
       strYesterday +
@@ -54,6 +54,7 @@ client.on("message", message => {
       "' " +
       "group by staytimes.guild_id,staytimes.user_id " +
       "order by staytimes.user_id,sec_to_time(sum( time_to_sec(staytimes.staytime)));";
+    console.log(params.sql)
     let result = new Promise((resolve, reject) => {
       RDS.executeStatement(params, (err, data) => {
         if (err) {
@@ -86,8 +87,9 @@ client.on("voiceStateUpdate", (oldmember, newmember) => {
   if (oldmember.selfMute != newmember.selfMute) {
     return;
   }
-  // 切断時は除外する
   console.log(newmember.voiceChannel);
+  // 切断時：参加時間の設定は行わない
+  // 切断時以外：参加時間を設定
   if (newmember.voiceChannel !== undefined) {
     const newChannelName = newmember.voiceChannel.name;
     const newChannelId = newmember.voiceChannel.id;
@@ -129,7 +131,7 @@ client.on("voiceStateUpdate", (oldmember, newmember) => {
       });
     });
   }
-  // 新規接続
+  // 新規接続：参加時間のみ設定
   let username = newmember.user.username;
   if (oldmember.voiceChannel === undefined) {
     // 初回のチャンネル選択
@@ -138,9 +140,8 @@ client.on("voiceStateUpdate", (oldmember, newmember) => {
   }
   let oldChannelName = oldmember.voiceChannel.name;
   let oldChannelId = oldmember.voiceChannel.id;
-  // 滞在時間を計算
-  if (userTimesMap.get(username)) {
-    // 2回目以降のチャンネル選択
+  // 2回目以降の接続：滞在時間を計算
+  if (userTimesMap.get(username)) { 
     let nowTime = new Date();
     let diffTime = new Date(nowTime - userTimesMap.get(username));
     userTimesMap.set(username, new Date());
@@ -169,9 +170,6 @@ client.on("voiceStateUpdate", (oldmember, newmember) => {
         }
       });
     });
-  } else {
-    // 初回のチャンネル選択
-    userTimesMap.set(username, new Date());
   }
 });
 
