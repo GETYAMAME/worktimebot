@@ -1,15 +1,11 @@
-# Discord sample bot working on glitch.com
+# Discord 勤怠管理bot
 
-## How to launch bot
+## 機能
 
-1. Import this repository to `glitch.com`.
-1. Add this line to `.env` file; `DISCORD_BOT_TOKEN={YOUR_DISCORD_BOT_USER_TOKEN}`
-1. Just run on `glitch.com` !
+1. botを追加したギルド内のボイスチャット滞在時間を計測
+1. botをメンションすることで、出勤〜退勤までの稼働時間を計測可能
 
-To get discord bot token, visit discord official develoer site; https://discordapp.com/developers/applications/me/
 
-## Running bot 24h on glitch.com
+## 設定方法
 
-Applications on `glitch.com` may sleep when keep no access for 5 minutes.
-You must ping application URL every 5 minutes to run your bot continuously.
-Using `uptimerobot.com` service is just good.
+botの追加方法。ちゃんと動くようになったら書く。

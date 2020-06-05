@@ -27,6 +27,9 @@ client.on('ready', message => {
 	console.log('bot is ready!');
 });
 
+// ======================
+// メンション時処理
+// ======================
 client.on('message', message => {
 	if(message.isMemberMentioned(client.user)){
     let today = new Date()
@@ -65,7 +68,9 @@ client.on('message', message => {
 	}
 });
 
-// ボイスチャットの移動
+// ======================
+// ボイスチャットの移動時処理
+// ======================
 client.on('voiceStateUpdate', (oldmember, newmember)=>{ 
   console.log(userTimesMap)
   const newUserId = newmember.user.id
