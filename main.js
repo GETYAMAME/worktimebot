@@ -47,21 +47,26 @@ client.on("message", message => {
     let guildId = message.channel.guild.id;
     // 日本時間に設定
     today.setTime(today.getTime() + 1000 * 60 * 60 * 9);
-    //let yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
     let strToday = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
-    //let strYesterday = yesterday.getFullYear() + "-" + (yesterday.getMonth() + 1) + "-" + yesterday.getDate();   
+    let strTodayTime = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds()
     params.sql =
-      "select users.username ,cast(min(staytimes.joinedtime) As time) As '出社時間',max(sec_to_time(time_to_sec(staytimes.joinedtime) + time_to_sec(staytimes.staytime))) As '退社時間' , sec_to_time(sum( time_to_sec(staytimes.staytime))) AS '合計滞在時間' from staytimes " +
-      "LEFT JOIN users ON users.id = staytimes.user_id " +
-      "where staytimes.joinedtime between '" +
+      "select SUB_TBL.username,cast(min(SUB_TBL.joinedtime) As time) As '出社時間',max(sec_to_time(time_to_sec(SUB_TBL.joinedtime) + time_to_sec(SUB_TBL.staytime))) As '退社時間' , sec_to_time(sum( time_to_sec(SUB_TBL.staytime))) AS '合計滞在時間' from " +
+      "(select users.username,staytimes.user_id,staytimes.guild_id,staytimes.channel_id,joinedtime," +
+      "CASE WHEN staytime is NULL THEN sec_to_time(time_to_sec('" +
+      strTodayTime +
+      "') - time_to_sec(joinedtime)) " +
+      "ELSE staytime END AS staytime " +
+      "from staytimes " +
+      "RIGHT JOIN users ON users.id = staytimes.user_id " +
+      "where joinedtime between '" +
       strToday +
       " 00:00:00' and '" +
       strToday +
       " 23:59:59' and staytimes.guild_id = '" +
       guildId +
-      "' " +
-      "group by staytimes.guild_id,staytimes.user_id " +
-      "order by staytimes.user_id,sec_to_time(sum( time_to_sec(staytimes.staytime)));";
+      "') SUB_TBL " +
+      "group by SUB_TBL.guild_id,SUB_TBL.user_id " +
+      "order by sec_to_time(sum( time_to_sec(SUB_TBL.staytime))) DESC";
     console.log(params.sql)
     let result = new Promise((resolve, reject) => {
       RDS.executeStatement(params, (err, data) => {
