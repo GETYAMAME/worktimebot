@@ -4,7 +4,7 @@
   "description": "discord bot sample on Glitch",
   "main": "main.js",
   "dependencies": {
-    "aws-sdk": "^2.686.0",
+    "aws-sdk": "^2.814.0",
     "discord.js": "latest",
     "mysql": "^2.18.1"
   },
